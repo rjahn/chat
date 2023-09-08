@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="libs/jvx.jar"/>
+	<classpathentry kind="lib" path="libs/jiconfont-1.0.0.jar"/>
+	<classpathentry kind="lib" path="libs/jiconfont-elusive-2.0.3.jar"/>
+	<classpathentry kind="lib" path="libs/jiconfont-google_material_design_icons-2.2.0.2.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JVx.swing"/>
+	<classpathentry kind="lib" path="libs/jiconfont-swing-1.0.1.jar"/>
+	<classpathentry kind="lib" path="libs/timingframework-classic-1.1.jar"/>
+	<classpathentry kind="lib" path="libs/jiconfont-font_awesome-4.7.0.1.jar"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>
