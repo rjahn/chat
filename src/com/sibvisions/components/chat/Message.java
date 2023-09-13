@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
@@ -26,8 +27,9 @@ import java.awt.event.ComponentEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 
-import javax.swing.JScrollPane;
+import javax.swing.UIManager;
 
+import com.sibvisions.components.chat.component.Avatar;
 import com.sibvisions.components.chat.component.BasePanel;
 import com.sibvisions.components.chat.component.TextPane;
 import com.sibvisions.rad.ui.swing.ext.layout.JVxBorderLayout;
@@ -53,15 +55,27 @@ public class Message extends BasePanel
 		Right
 	};
 	
+	/** the chat. */
+	private Chat chat;
+
 	/** the message layout. */
 	private JVxFormLayout flThis = new JVxFormLayout();
 
 	/** the message bubble. */
 	private Bubble bubble;
 	
+	/** the avatar. */
+	private Avatar avatar;
+	
 	/** the component resize listener. */
 	private ComponentAdapter listener;
 
+	/** the message type. */
+	private Type type;
+
+	/** the text. */
+	private String text;
+	
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Initialization
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
@@ -69,24 +83,31 @@ public class Message extends BasePanel
 	/**
 	 * Creates a new instance of <code>Message</code>.
 	 * 
+	 * @param pChat the chat
 	 * @param pText the text to show
 	 */
-	public Message(String pText)
+	public Message(Chat pChat, String pText)
 	{
-		this(pText, Type.Left);
+		this(pChat, pText, Type.Left);
 	}
 	
 	/**
 	 * Creates a new instance of <code>Message</code>.
 	 * 
+	 * @param pChat the chat
 	 * @param pText the text to show
 	 * @param pType the message type
 	 */
-	public Message(String pText, Type pType)
+	public Message(Chat pChat, String pText, Type pType)
 	{
+		chat = pChat;
+		text = pText;
+		type = pType;
+		
 		flThis.setMargins(new Insets(5, 0, 5, 0));
 		
-		bubble = new Bubble(pText, pType);
+		bubble = new Bubble(this);
+		avatar = new Avatar();
 		
 		setOpaque(false);
 
@@ -94,11 +115,35 @@ public class Message extends BasePanel
 		
 		if (pType == Type.Left)
 		{
-			add(bubble, flThis.createConstraint(0, 0));
+			add(avatar, flThis.createConstraint(0, 0));
+			add(bubble, flThis.createConstraint(1, 0));
+			
+			Image img = chat.getAvatarLeft();
+			
+			if (img != null)
+			{
+				avatar.setImage(img);
+			}
+			else
+			{
+				avatar.setVisible(false);
+			}
 		}
 		else
 		{
-			add(bubble, flThis.createConstraint(-1, 0));
+			add(avatar, flThis.createConstraint(-1, 0));
+			add(bubble, flThis.createConstraint(-2, 0));
+			
+			Image img = chat.getAvatarRight();
+			
+			if (img != null)
+			{
+				avatar.setImage(img);
+			}
+			else
+			{
+				avatar.setVisible(false);
+			}
 		}
 		
 		listener = new ComponentAdapter() 
@@ -106,7 +151,9 @@ public class Message extends BasePanel
 			public void componentResized(ComponentEvent pEvent)
 			{
 				//don't grow out of the message area
-				bubble.setMaximumSize(new Dimension(pEvent.getComponent().getWidth(), Integer.MAX_VALUE));
+				bubble.setMaximumSize(new Dimension(pEvent.getComponent().getWidth() - (avatar.isVisible() ? avatar.getWidth() + flThis.getHorizontalGap() : 0), 
+						                            Integer.MAX_VALUE));
+				
 				bubble.revalidate();
 			}
 		};
@@ -147,11 +194,8 @@ public class Message extends BasePanel
 	    // Class members
 	    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
 
-		/** the text. */
-		private String text;
-		
-		/** the message type. */
-		private Type type;
+		/** the message. */
+		private Message message;
 		
 	    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	    // Initialization
@@ -160,32 +204,44 @@ public class Message extends BasePanel
 		/**
 		 * Creates a new instance of <code>Bubble</code>.
 		 * 
-		 * @param pText the text to show
-		 * @param pType the message type
+		 * @param pMessage the message
 		 */
-		public Bubble(String pText, Type pType)
+		public Bubble(Message pMessage)
 		{
-			text = pText;
-			type = pType;
+			message = pMessage;
+
+			Object oMin = UIManager.get("Component.minimumWidth");
 			
-			TextPane textPane = new TextPane(true);
-			textPane.setText(text);
-			textPane.setHighlighter(null);
-			textPane.setMinimumSize(new Dimension(50, 20));
+			//important for some LaFs (like Flat)
+			UIManager.put("Component.minimumWidth", Integer.valueOf(20));
 			
-			JScrollPane scpText = new JScrollPane();
-			scpText.setOpaque(false);
-	        scpText.setBorder(null);
-	        scpText.setViewportBorder(null);
-	        scpText.setViewportView(textPane);
-	        scpText.getViewport().setOpaque(false);
-	        scpText.getVerticalScrollBar().setOpaque(false);
-	        scpText.getVerticalScrollBar().setPreferredSize(new Dimension(1, 0));
-	        scpText.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 0));
+			TextPane textPane;
+			
+			try
+			{
+				textPane = new TextPane(true);
+				textPane.setText(pMessage.chat.translate(pMessage.text));
+				textPane.setHighlighter(null);
+				textPane.setMinimumSize(new Dimension(20, 20));
+			}
+			finally
+			{
+				UIManager.put("Component.minimumWidth", oMin);
+			}
+			
+//			JScrollPane scpText = new JScrollPane();
+//			scpText.setOpaque(false);
+//	        scpText.setBorder(null);
+//	        scpText.setViewportBorder(null);
+//	        scpText.setViewportView(textPane);
+//	        scpText.getViewport().setOpaque(false);
+//	        scpText.getVerticalScrollBar().setOpaque(false);
+//	        scpText.getVerticalScrollBar().setPreferredSize(new Dimension(1, 0));
+//	        scpText.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 0));
 	
 			JVxBorderLayout blThis = new JVxBorderLayout();
 			
-			if (pType == Type.Left)
+			if (message.type == Type.Left)
 			{
 				blThis.setMargins(new Insets(0, 8, 0, 0));
 			}
@@ -227,18 +283,18 @@ public class Message extends BasePanel
 		    path.curveTo(15, height, 5, height, 5, height - 10);
 		    path.lineTo(5, 15);
 
-		    if (type == Type.Right)
+		    if (message.type == Type.Right)
 		    {
 				AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
 				tx.translate(-width, 0);
 
 			    path.transform(tx);
 			    
-			    graphics2D.setPaint(new Color(255, 191, 0, 210));
+			    graphics2D.setPaint(message.chat.getMessageColorRight());
 		    }
 		    else
 		    {
-		    	graphics2D.setPaint(new Color(250, 250, 250, 65));
+		    	graphics2D.setPaint(message.chat.getMessageColorLeft());
 		    }
 		    
 		    path.closePath();

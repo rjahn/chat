@@ -15,10 +15,19 @@
  */
 package com.sibvisions.components.chat;
 
+import java.awt.Color;
+
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
+import com.sibvisions.components.chat.event.ChatEvent;
+import com.sibvisions.components.chat.event.ChatListener;
+import com.sibvisions.components.chat.event.MessageEvent;
 import com.sibvisions.rad.ui.swing.ext.layout.JVxBorderLayout;
+
+import jiconfont.icons.google_material_design_icons.GoogleMaterialDesignIcons;
+import jiconfont.swing.IconFontSwing;
 
 /**
  * Tests {@link Chat} functionality.
@@ -26,6 +35,7 @@ import com.sibvisions.rad.ui.swing.ext.layout.JVxBorderLayout;
  * @author René Jahn
  */
 public class TestChat extends JFrame
+                      implements ChatListener
 {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Main
@@ -64,11 +74,38 @@ public class TestChat extends JFrame
 		setLayout(layout);
 		
 		Chat chat = new Chat();
+		chat.setAvatarRight(((ImageIcon)IconFontSwing.buildIcon(GoogleMaterialDesignIcons.VERIFIED_USER, 18f, new Color(200, 200, 200))).getImage());
+		chat.setTitle("Chat with me");
+		chat.setCloseVisible(true);
+		chat.addChatListener(this);
 		
 		add(chat, JVxBorderLayout.CENTER);
 		
         pack();
         setLocationRelativeTo(null);
+	}
+	
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Interface implementation
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+		/**
+	 * {@inheritDoc}
+	 */
+	public void chatNotification(ChatEvent pEvent)
+	{
+		switch (pEvent.getType())
+		{
+			case ChatEvent.EVENT_CLOSE:
+				dispose();
+				break;
+			case ChatEvent.EVENT_MESSAGE:
+				pEvent.getChat().addMessage(new Message(pEvent.getChat(), 
+						                                ((MessageEvent)pEvent).getMessage().trim(), pEvent.getChat().getMessages().length %2 == 0 ? Message.Type.Left : Message.Type.Right));
+				break;
+			default:
+				//ignore
+		}
 	}
 	
 }	// TestChat

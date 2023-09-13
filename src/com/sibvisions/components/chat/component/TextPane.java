@@ -25,7 +25,6 @@ import java.awt.RenderingHints;
 
 import javax.swing.BorderFactory;
 import javax.swing.JTextPane;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
@@ -61,6 +60,7 @@ public class TextPane extends JTextPane
     
     /** the animator. */
     private Animator animator;
+    
     /** the animate value. */
     private float animate;
     
@@ -90,7 +90,6 @@ public class TextPane extends JTextPane
     public TextPane(boolean pReadOnly)
 	{
     	setOpaque(false);
-        setBorder(new EmptyBorder(9, 9, 9, 1));
         setForeground(new Color(255, 255, 255));
         setSelectionColor(new Color(200, 200, 200, 100));
         setCaretColor(new Color(200, 200, 200, 100));
