@@ -227,11 +227,18 @@ public class Chat extends BasePanel
             	
             	if (!StringUtil.isEmpty(sText))
             	{
+            		int iCount = liMessages.size();
+            		
 	            	fireMessage(text.getText());
+	            	
+	            	boolean bScroll = iCount != liMessages.size();
 	            	
 	            	scpMessages.repaint();
 	            	
-	            	scrollToBottom();
+	            	if (bScroll)
+	            	{
+	            		scrollToBottom();
+	            	}
 	            	
 	            	text.setTextNoAnimation(null);
 	            	text.requestFocus();
@@ -470,6 +477,15 @@ public class Chat extends BasePanel
 	{
 		text.requestFocus();
 	}
+	
+	@Override
+	public void setEnabled(boolean pEnabled)
+	{
+		super.setEnabled(pEnabled);
+		
+		text.setEditable(pEnabled);
+		butSend.setEnabled(pEnabled);
+	}
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // User-defined methods
@@ -644,6 +660,8 @@ public class Chat extends BasePanel
 		int iPos = liMessages.size() - 1;
 		
     	panMessages.add(pMessage, flMessages.createConstraint(0, iPos, -1, iPos));
+    	
+    	scrollToBottom();
 	}
 	
 	/**

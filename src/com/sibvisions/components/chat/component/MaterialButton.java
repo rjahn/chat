@@ -99,7 +99,7 @@ public class MaterialButton extends JButton
             @Override
             public void mousePressed(MouseEvent me) 
             {
-                if (SwingUtilities.isLeftMouseButton(me)) 
+                if (SwingUtilities.isLeftMouseButton(me) && isEnabled()) 
                 {
                     ptPressed = me.getPoint();
 
