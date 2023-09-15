@@ -21,3 +21,4 @@ A simple chat UI for swing.
 * Title (optional)
 * Event listener
 * Customizable colors
+* Translation support
