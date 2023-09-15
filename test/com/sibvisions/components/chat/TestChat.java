@@ -67,6 +67,7 @@ public class TestChat extends JFrame
 	 */
 	public TestChat()
 	{
+		setUndecorated(true);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		
 		JVxBorderLayout layout = new JVxBorderLayout();
@@ -79,8 +80,7 @@ public class TestChat extends JFrame
 		chat.setCloseVisible(true);
 		chat.addChatListener(this);
 		
-		Message msg = new Message(chat, null, Message.Type.Right);
-		msg.setTyping(true);
+		Message msg = new Message(chat, "Hello and welcome!", Message.Type.Right);
 		
 		chat.addMessage(msg);
 		
@@ -106,7 +106,7 @@ public class TestChat extends JFrame
 				break;
 			case ChatEvent.EVENT_MESSAGE:
 				pEvent.getChat().addMessage(new Message(pEvent.getChat(), 
-						                                ((MessageEvent)pEvent).getMessage().trim(), pEvent.getChat().getMessages().length %2 == 0 ? Message.Type.Left : Message.Type.Right));
+						                                ((MessageEvent)pEvent).getMessage().trim(), pEvent.getChat().getMessages().length %2 == 1 ? Message.Type.Left : Message.Type.Right));
 				break;
 			default:
 				//ignore
