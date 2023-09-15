@@ -35,6 +35,7 @@ import javax.rad.model.ui.ITranslatable;
 import javax.rad.util.ITranslator;
 import javax.rad.util.TranslationMap;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -47,6 +48,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 
+import com.sibvisions.components.chat.Message.Type;
 import com.sibvisions.components.chat.animation.FloatingComponentAnimation;
 import com.sibvisions.components.chat.animation.ScrollAnimation;
 import com.sibvisions.components.chat.component.ArcPanel;
@@ -58,6 +60,7 @@ import com.sibvisions.components.chat.event.CloseEvent;
 import com.sibvisions.components.chat.event.MessageEvent;
 import com.sibvisions.components.chat.util.GradientIconFontSwing;
 import com.sibvisions.components.chat.util.GradientIconFontSwing.GradientDirection;
+import com.sibvisions.rad.ui.swing.ext.JVxUtil;
 import com.sibvisions.rad.ui.swing.ext.layout.JVxBorderLayout;
 import com.sibvisions.rad.ui.swing.ext.layout.JVxFormLayout;
 import com.sibvisions.rad.ui.swing.ext.layout.JVxFormLayout.Constraint;
@@ -119,31 +122,58 @@ public class Chat extends BasePanel
 	private TranslationMap translation = null;
     
 	/** the left message color. */
-	private Color colMessageLeft = new Color(250, 250, 250, 65);
+	private Color colBackgroundMessageLeft = new Color(250, 250, 250, 65);
 
 	/** the right message color. */
-	private Color colMessageRight = new Color(255, 191, 0, 210);
+	private Color colBackgroundMessageRight = new Color(255, 191, 0, 210);
 	
+	/** the left message text color. */
+	private Color colDefaultMessageForegroundLeft = Color.WHITE;
+	
+	/** the right message text color. */
+	private Color colDefaultMessageForegroundRight = new Color(30, 30, 30);
+
 	/** the left avatar. */
 	private Image imgAvatarLeft;
 
 	/** the right avatar. */
 	private Image imgAvatarRight;
 	
+	/** the left typing icon. */
+	private Icon icoTypingLeft = JVxUtil.getIcon("/com/sibvisions/components/chat/pulse_left.gif");
+	
+	/** the right typing icon. */
+	private Icon icoTypingRight = JVxUtil.getIcon("/com/sibvisions/components/chat/pulse_right.gif");;
+	
 	/** the title. */
 	private JLabel lblTitle = new JLabel();
-	
-	/** the untranslated title. */
-	private String sTitle;
 	
 	/** the messages. */
 	private ArrayUtil<Message> liMessages = new ArrayUtil<Message>();
 
 	/** the chat listeners. */
 	private ArrayUtil<ChatListener> liListeners = new ArrayUtil<ChatListener>();
+	
+	/** the left typing message. */
+	private Message msgTypingLeft;
     
-    /** whether the translation is enabled. */
+	/** the right typing message. */
+	private Message msgTypingRight;
+
+	/** the untranslated title. */
+	private String sTitle;
+	
+	/** the typing message. */
+	private String sTypingMessage;
+
+	/** whether the translation is enabled. */
     private boolean bTranslationEnabled = true;
+    
+    /** whether to show a typing message on the left. */
+    private boolean bTypingLeft;
+    
+    /** whether to show a typing message on the right. */
+    private boolean bTypingRight;
 	
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Initialization
@@ -215,7 +245,7 @@ public class Chat extends BasePanel
 		// Center
         //------------------------------------------------------------
 
-		butSend.setIcon(GradientIconFontSwing.buildIcon(GoogleMaterialDesignIcons.SEND, 20f, colMessageRight, 
+		butSend.setIcon(GradientIconFontSwing.buildIcon(GoogleMaterialDesignIcons.SEND, 20f, colBackgroundMessageRight, 
 				                                        new Color(255, 143, 0), GradientDirection.LeftToRight));
 		
         butSend.addActionListener(new ActionListener() 
@@ -510,43 +540,83 @@ public class Chat extends BasePanel
 	}
 
 	/**
-	 * Sets the color of left messages.
+	 * Sets the default background color of left messages.
 	 * 
-	 * @param pColor the color
+	 * @param pColor the background color
 	 */
-	public void setMessageColorLeft(Color pColor)
+	public void setDefaultMessageBackgroundLeft(Color pColor)
 	{
-		colMessageLeft = pColor;
+		colBackgroundMessageLeft = pColor;
 	}
 
 	/**
-	 * Gets the color of right messages.
+	 * Gets the default background color of left messages.
 	 * 
-	 * @return the color
+	 * @return the background color
 	 */
-	public Color getMessageColorLeft()
+	public Color getDefaultMessageBackgroundLeft()
 	{
-		return colMessageLeft;
+		return colBackgroundMessageLeft;
 	}
 	
 	/**
-	 * Sets the color of right messages.
+	 * Sets the default background color of right messages.
 	 * 
-	 * @param pColor the color
+	 * @param pColor the background color
 	 */
-	public void setMessageColorRight(Color pColor)
+	public void setDefaultMessageBackgroundRight(Color pColor)
 	{
-		colMessageRight = pColor;
+		colBackgroundMessageRight = pColor;
 	}
 
 	/**
-	 * Gets the color of right messages.
+	 * Gets the default background color of right messages.
 	 * 
-	 * @return the color
+	 * @return the background color
 	 */
-	public Color getMessageColorRight()
+	public Color getDefaultMessageBackgroundRight()
 	{
-		return colMessageRight;
+		return colBackgroundMessageRight;
+	}
+	
+	/**
+	 * Sets the default foreground color of left messages.
+	 * 
+	 * @param pColor the foreground color
+	 */
+	public void setDefaultMessageForegroundLeft(Color pColor)
+	{
+		colDefaultMessageForegroundLeft = pColor;
+	}
+
+	/**
+	 * Gets the default foreground color of left messages.
+	 * 
+	 * @return the foreground color
+	 */
+	public Color getDefaultMessageForegroundLeft()
+	{
+		return colDefaultMessageForegroundLeft;
+	}
+	
+	/**
+	 * Sets the default foreground color of right messages.
+	 * 
+	 * @param pColor the foreground color
+	 */
+	public void setDefaultMessageForegroundRight(Color pColor)
+	{
+		colDefaultMessageForegroundRight = pColor;
+	}
+
+	/**
+	 * Gets the default foreground color of right messages.
+	 * 
+	 * @return the foreground color
+	 */
+	public Color getDefaultMessageForegroundRight()
+	{
+		return colDefaultMessageForegroundRight;
 	}
 	
 	/**
@@ -589,6 +659,136 @@ public class Chat extends BasePanel
 		imgAvatarRight = pImage;
 	}
 
+	/**
+	 * Sets the typing icon for messages on the left.
+	 * 
+	 * @param pIcon the icon
+	 */
+	public void setTypingIconLeft(Icon pIcon)
+	{
+		icoTypingLeft = pIcon;
+	}
+	
+	/**
+	 * Gets the typing icon for messages on the left.
+	 * 
+	 * @return the icon
+	 */
+	public Icon getTypingIconLeft()
+	{
+		return icoTypingLeft;
+	}
+	
+	/**
+	 * Sets the typing icon for messages on the right.
+	 * 
+	 * @param pIcon the icon
+	 */
+	public void setTypingIconRight(Icon pIcon)
+	{
+		icoTypingRight = pIcon;
+	}
+	
+	/**
+	 * Gets the typing icon for messages on the right.
+	 * 
+	 * @return the icon
+	 */
+	public Icon getTypingIconRight()
+	{
+		return icoTypingRight;
+	}
+	
+	/**
+	 * Sets whether the left is typing.
+	 * 
+	 * @param pTyping <code>true</code> for typing
+	 */
+	public void setTypingLeft(boolean pTyping)
+	{
+		if (pTyping != bTypingLeft)
+		{
+			bTypingLeft = pTyping;
+			
+			if (bTypingLeft)
+			{
+				msgTypingLeft = new Message(this, sTypingMessage, Message.Type.Left);
+				msgTypingLeft.setTyping(true);
+				
+				addMessage(msgTypingLeft);
+			}
+			else
+			{
+				removeMessage(msgTypingLeft);
+			}
+		}
+	}
+	
+	/**
+	 * Gets whether the left is typing.
+	 * 
+	 * @return <code>true</code> if typing
+	 */
+	public boolean isTypingLeft()
+	{
+		return bTypingLeft;
+	}
+
+	/**
+	 * Sets whether the right is typing.
+	 * 
+	 * @param pTyping <code>true</code> for typing
+	 */
+	public void setTypingRight(boolean pTyping)
+	{
+		if (pTyping != bTypingRight)
+		{
+			bTypingRight = pTyping;
+			
+			if (bTypingRight)
+			{
+				msgTypingRight = new Message(this, sTypingMessage, Message.Type.Right);
+				msgTypingRight.setTyping(true);
+				
+				addMessage(msgTypingRight);
+			}
+			else
+			{
+				removeMessage(msgTypingRight);
+			}
+		}
+	}
+	
+	/**
+	 * Sets the typing message.
+	 * 
+	 * @param pText the message
+	 */
+	public void setTypingMessage(String pText)
+	{
+		sTypingMessage = pText;
+	}
+	
+	/**
+	 * Gets the typing message.
+	 * 
+	 * @return the message
+	 */
+	public String getTypingMessage()
+	{
+		return sTypingMessage;
+	}
+	
+	/**
+	 * Gets whether the right is typing.
+	 * 
+	 * @return <code>true</code> if typing
+	 */
+	public boolean isTypingRight()
+	{
+		return bTypingRight;
+	}
+	
 	/**
 	 * Sets the gradient color of send button.
 	 * 
@@ -655,11 +855,44 @@ public class Chat extends BasePanel
 	 */
 	public void addMessage(Message pMessage)
 	{
-		liMessages.add(pMessage);
+		int iPos = -1;
 		
-		int iPos = liMessages.size() - 1;
+		if (pMessage.getType() == Type.Left)
+		{
+			if (msgTypingLeft != null)
+			{
+				iPos = liMessages.indexOf(msgTypingLeft);
+			}
+		}
+		else
+		{
+			if (msgTypingRight != null)
+			{
+				iPos = liMessages.indexOf(msgTypingRight);
+			}
+		}
 		
-    	panMessages.add(pMessage, flMessages.createConstraint(0, iPos, -1, iPos));
+		if (iPos < 0)
+		{
+			liMessages.add(pMessage);
+			
+			iPos = liMessages.size();
+			
+			panMessages.add(pMessage, flMessages.createConstraint(0, iPos, -1, iPos));
+		}
+		else
+		{
+			liMessages.add(iPos, pMessage);
+
+			//update constraints
+			
+			panMessages.add(pMessage, flMessages.createConstraint(0, iPos, -1, iPos));
+
+			for (int i = iPos, j = i + 1, cnt = liMessages.size(); i < cnt; i++, j++)
+			{
+				flMessages.setConstraint(liMessages.get(i), flMessages.createConstraint(0, j, -1, j));
+			}
+		}
     	
     	scrollToBottom();
 	}

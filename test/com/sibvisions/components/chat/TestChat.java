@@ -79,6 +79,11 @@ public class TestChat extends JFrame
 		chat.setCloseVisible(true);
 		chat.addChatListener(this);
 		
+		Message msg = new Message(chat, null, Message.Type.Right);
+		msg.setTyping(true);
+		
+		chat.addMessage(msg);
+		
 		add(chat, JVxBorderLayout.CENTER);
 		
         pack();

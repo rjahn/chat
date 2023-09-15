@@ -27,6 +27,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 
+import javax.swing.Icon;
 import javax.swing.UIManager;
 
 import com.sibvisions.components.chat.component.Avatar;
@@ -75,6 +76,15 @@ public class Message extends BasePanel
 
 	/** the text. */
 	private String text;
+	
+	/** the background color. */
+	private Color colBackground;
+	
+	/** the foreground color. */
+	private Color colForeground;
+	
+	/** whether the message is a typing message. */
+	private boolean isTyping;
 	
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Initialization
@@ -179,6 +189,102 @@ public class Message extends BasePanel
 		getParent().getParent().removeComponentListener(listener);
 	}
 	
+	@Override
+   	public void setForeground(Color pColor)
+	{
+		if (bubble != null)
+		{
+			colForeground = pColor;
+	
+			bubble.update();
+		}
+
+		super.setForeground(pColor);
+	}
+
+	@Override
+	public Color getForeground()
+	{
+		return colForeground;
+	}
+	
+	@Override
+	public void setBackground(Color pColor)
+	{
+		if (bubble != null)
+		{
+			colBackground = pColor;
+		
+			bubble.update();
+		}
+		
+		super.setBackground(pColor);
+	}
+
+	@Override
+	public Color getBackground()
+	{
+		return colBackground;
+	}
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// User-defined methods
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	/**
+	 * Gets the type.
+	 * 
+	 * @return the type
+	 */
+	public Type getType()
+	{
+		return type;
+	}
+	
+	/**
+	 * Sets the text.
+	 * 
+	 * @param pText the text
+	 */
+	public void setText(String pText)
+	{
+		text = pText;
+		
+		bubble.update();
+	}
+
+	/**
+	 * Gets the text.
+	 * 
+	 * @return the text
+	 */
+	public String getText()
+	{
+		return text;
+	}
+	
+	/**
+	 * Sets whether the message is a typing message.
+	 * 
+	 * @param pTyping <code>true</code> if typing, <code>false</code> otherwise
+	 */
+	public void setTyping(boolean pTyping)
+	{
+		isTyping = pTyping;
+		
+		bubble.update();
+	}
+	
+	/**
+	 * Gets whether the message is a typing message.
+	 * 
+	 * @return <code>true</code> if typing, <code>false</code> otherwise
+	 */
+	public boolean isTyping()
+	{
+		return isTyping;
+	}
+	
     //****************************************************************
     // Subclass definition
     //****************************************************************
@@ -196,6 +302,9 @@ public class Message extends BasePanel
 
 		/** the message. */
 		private Message message;
+		
+		/** the text pane. */
+		private TextPane textPane;
 		
 	    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	    // Initialization
@@ -215,12 +324,9 @@ public class Message extends BasePanel
 			//important for some LaFs (like Flat)
 			UIManager.put("Component.minimumWidth", Integer.valueOf(20));
 			
-			TextPane textPane;
-			
 			try
 			{
 				textPane = new TextPane(true);
-				textPane.setText(pMessage.chat.translate(pMessage.text));
 				textPane.setHighlighter(null);
 				textPane.setMinimumSize(new Dimension(20, 20));
 			}
@@ -238,7 +344,9 @@ public class Message extends BasePanel
 //	        scpText.getVerticalScrollBar().setOpaque(false);
 //	        scpText.getVerticalScrollBar().setPreferredSize(new Dimension(1, 0));
 //	        scpText.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 0));
-	
+
+			update();
+			
 			JVxBorderLayout blThis = new JVxBorderLayout();
 			
 			if (message.type == Type.Left)
@@ -247,8 +355,6 @@ public class Message extends BasePanel
 			}
 			else
 			{
-				textPane.setForeground(new Color(30, 30, 30));
-				
 				blThis.setMargins(new Insets(0, 0, 0, 8));
 			}
 			
@@ -257,6 +363,10 @@ public class Message extends BasePanel
 			add(textPane, JVxBorderLayout.CENTER);
 		}
 		
+	    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	    // Overwritten methods
+	    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+
 		@Override
 		protected void paintComponent(Graphics g) 
 		{
@@ -283,18 +393,20 @@ public class Message extends BasePanel
 		    path.curveTo(15, height, 5, height, 5, height - 10);
 		    path.lineTo(5, 15);
 
-		    if (message.type == Type.Right)
+		    Color colBackground = message.getBackground();
+
+		    if (message.type == Type.Left)
+		    {
+		    	graphics2D.setPaint(colBackground != null ? colBackground : message.chat.getDefaultMessageBackgroundLeft());
+		    }
+		    else
 		    {
 				AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
 				tx.translate(-width, 0);
 
 			    path.transform(tx);
 			    
-			    graphics2D.setPaint(message.chat.getMessageColorRight());
-		    }
-		    else
-		    {
-		    	graphics2D.setPaint(message.chat.getMessageColorLeft());
+			    graphics2D.setPaint(colBackground != null ? colBackground : message.chat.getDefaultMessageBackgroundRight());
 		    }
 		    
 		    path.closePath();
@@ -303,6 +415,57 @@ public class Message extends BasePanel
 		    
 		    super.paintComponent(g);
 		}		
+		
+	    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	    // User-defined methods
+	    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+		
+		/**
+		 * Updates text and colors.
+		 */
+		protected void update()
+		{
+			textPane.setText(message.chat.translate(message.text));
+			
+			Color colForeground = message.getForeground();
+			
+			if (message.type == Type.Left)
+			{
+				//left: icon after text
+				if (message.isTyping)
+				{
+					Icon ico = message.chat.getTypingIconLeft();
+					
+					if (ico != null)
+					{
+						textPane.insertIcon(ico);
+					}
+				}
+				
+				textPane.setForeground(colForeground != null ? colForeground : message.chat.getDefaultMessageForegroundLeft());
+			}
+			else
+			{
+				//right: icon before text
+				if (message.isTyping)
+				{
+					Icon ico = message.chat.getTypingIconRight();
+					
+					if (ico != null)
+					{
+						textPane.setCaretPosition(0);
+						textPane.insertIcon(ico);
+					}
+				}
+
+				textPane.setForeground(colForeground != null ? colForeground : message.chat.getDefaultMessageForegroundRight());
+			}
+
+			if (message.isShowing())
+			{
+				repaint();
+			}
+		}
 		
 	}	// Bubble
 
