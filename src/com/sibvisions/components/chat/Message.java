@@ -16,6 +16,7 @@
 package com.sibvisions.components.chat;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -160,9 +161,7 @@ public class Message extends BasePanel
 		{
 			public void componentResized(ComponentEvent pEvent)
 			{
-				//don't grow out of the message area
-				bubble.setMaximumSize(new Dimension(pEvent.getComponent().getWidth() - (avatar.isVisible() ? avatar.getWidth() + flThis.getHorizontalGap() : 0), 
-						                            Integer.MAX_VALUE));
+				updateBubbleMaxSize(pEvent.getComponent());
 				
 				bubble.revalidate();
 			}
@@ -177,8 +176,13 @@ public class Message extends BasePanel
 	public void addNotify()
 	{
 		super.addNotify();
+
+		Component comp = getParent().getParent();
+
+		//the initial size should be correct
+		updateBubbleMaxSize(comp);
 		
-		getParent().getParent().addComponentListener(listener);
+		comp.addComponentListener(listener);
 	}
 	
 	@Override
@@ -283,6 +287,18 @@ public class Message extends BasePanel
 	public boolean isTyping()
 	{
 		return isTyping;
+	}
+	
+	/**
+	 * Updates the maximum size of the bubble.
+	 * 
+	 * @param pComponent the parent component
+	 */
+	private void updateBubbleMaxSize(Component pComponent)
+	{
+		//don't grow out of the message area
+		bubble.setMaximumSize(new Dimension(pComponent.getWidth() - (avatar.isVisible() ? avatar.getWidth() + flThis.getHorizontalGap() : 0), 
+				                     		Integer.MAX_VALUE));
 	}
 	
     //****************************************************************
