@@ -67,6 +67,7 @@ import com.sibvisions.rad.ui.swing.ext.layout.JVxFormLayout.Constraint;
 import com.sibvisions.util.ArrayUtil;
 import com.sibvisions.util.type.StringUtil;
 
+import jiconfont.IconCode;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.icons.google_material_design_icons.GoogleMaterialDesignIcons;
 import jiconfont.swing.IconFontSwing;
@@ -82,6 +83,15 @@ public class Chat extends BasePanel
     // Class members
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+	/** the button position. */
+	public enum ButtonPosition
+	{
+		/** left. */
+		Left,
+		/** right. */
+		Right
+	};
+	
 	/** the text message. */
 	private TextPane text = new TextPane();
 	
@@ -114,6 +124,12 @@ public class Chat extends BasePanel
 
     /** the title panel. */
     private ArcPanel panTitle = new ArcPanel();
+    
+    /** the option buttons layout. */
+    private JVxFormLayout flOptionButtons = new JVxFormLayout();
+
+    /** the option buttons panel. */
+    private ArcPanel panOptionButtons;
     
     /** the messages layout. */
     private JVxFormLayout flMessages = new JVxFormLayout();
@@ -153,6 +169,12 @@ public class Chat extends BasePanel
 
 	/** the chat listeners. */
 	private ArrayUtil<ChatListener> liListeners = new ArrayUtil<ChatListener>();
+	
+	/** the optional left buttons. */
+	private ArrayUtil<MaterialButton> liLeftButtons = new ArrayUtil<MaterialButton>();
+	
+	/** the optional right buttons. */
+	private ArrayUtil<MaterialButton> liRightButtons = new ArrayUtil<MaterialButton>();
 	
 	/** the left typing message. */
 	private Message msgTypingLeft;
@@ -392,15 +414,32 @@ public class Chat extends BasePanel
 		JVxFormLayout flBottom = new JVxFormLayout();
 		flBottom.setMargins(new Insets(0, 0, 0, 0));
 		
-		ArcPanel panBottom = new ArcPanel(flBottom);
-		panBottom.setBackground(colWhite);
+		ArcPanel panSendMessage = new ArcPanel(flBottom);
+		panSendMessage.setBackground(colWhite);
 
-		panBottom.add(scpText, flBottom.createConstraint(0, 0, -2, -1));
-		panBottom.add(butSend, flBottom.createConstraint(-1, -1));
+		JVxBorderLayout blOptions = new JVxBorderLayout();
+		blOptions.setMargins(new Insets(0, 0, 0, 0));
+
+		JPanel panOptions = new JPanel(blOptions);
+		panOptions.setOpaque(false);
+		
+		flOptionButtons.setMargins(new Insets(4, 4, 4, 4));
+
+		panOptionButtons = new ArcPanel(flOptionButtons);
+		panOptionButtons.setBottomNoArc(true);
+		panOptionButtons.setArc(25);
+		panOptionButtons.setBackground(new Color(255, 255, 255, 100));
+		panOptionButtons.setVisible(false);
+		
+		panSendMessage.add(scpText, flBottom.createConstraint(0, 0, -2, -1));
+		panSendMessage.add(butSend, flBottom.createConstraint(-1, -1));
+		
+		panOptions.add(panOptionButtons, JVxBorderLayout.NORTH);
+		panOptions.add(panSendMessage, JVxBorderLayout.SOUTH);
 		
 		add(panTitleBar, JVxBorderLayout.NORTH);
 		add(lpCenter, JVxBorderLayout.CENTER);
-		add(panBottom, JVxBorderLayout.SOUTH);
+		add(panOptions, JVxBorderLayout.SOUTH);
 		
 		setPreferredSize(new Dimension(300, 380));
 		
@@ -855,6 +894,8 @@ public class Chat extends BasePanel
 	 */
 	public void addMessage(Message pMessage)
 	{
+		pMessage.setChat(this);
+		
 		int iPos = -1;
 		
 		if (pMessage.getType() == Type.Left)
@@ -914,9 +955,154 @@ public class Chat extends BasePanel
 	 */
 	public void removeMessage(Message pMessage)
 	{
+		pMessage.setChat(null);
+		
 		liMessages.remove(pMessage);
 		
 		panMessages.remove(pMessage);
+	}
+
+	/**
+	 * Adds an optional, right positioned, button to the chat area.
+	 * 
+	 * @param pIcon the icon
+	 * @param pListener the action listener
+	 * @return the new button
+	 */
+	public MaterialButton addButton(IconCode pIcon, ActionListener pListener)
+	{
+		return addButton(pIcon, null, pListener, ButtonPosition.Right);
+	}
+
+	/**
+	 * Adds an optional, right positioned, button to the chat area.
+	 * 
+	 * @param pText the text
+	 * @param pListener the action listener
+	 * @return the new button
+	 */
+	public MaterialButton addButton(String pText, ActionListener pListener)
+	{
+		return addButton(null, pText, pListener, ButtonPosition.Right);
+	}
+
+	/**
+	 * Adds an optional, right positioned, button to the chat area.
+	 * 
+	 * @param pIcon the icon
+	 * @param pText the text
+	 * @param pListener the action listener
+	 * @return the new button
+	 */
+	public MaterialButton addButton(IconCode pIcon, String pText, ActionListener pListener)
+	{
+		return addButton(pIcon, pText, pListener, ButtonPosition.Right);
+	}
+	
+	/**
+	 * Adds an optional button to the chat area.
+	 * 
+	 * @param pIcon the icon
+	 * @param pListener the action listener
+	 * @param pPosition the position
+	 * @return the new button
+	 */
+	public MaterialButton addButton(IconCode pIcon, ActionListener pListener, ButtonPosition pPosition)
+	{
+		return addButton(pIcon, null, pListener, pPosition);
+	}
+
+	/**
+	 * Adds an optional button to the chat area.
+	 * 
+	 * @param pText the text
+	 * @param pListener the action listener
+	 * @param pPosition the position
+	 * @return the new button
+	 */
+	public MaterialButton addButton(String pText, ActionListener pListener, ButtonPosition pPosition)
+	{
+		return addButton(null, pText, pListener, pPosition);
+	}
+	
+	/**
+	 * Adds an optional button to the chat area.
+	 * 
+	 * @param pIcon the icon
+	 * @param pText the text
+	 * @param pListener the action listener
+	 * @param pPosition the position
+	 * @return the new button
+	 */
+	public MaterialButton addButton(IconCode pIcon, String pText, ActionListener pListener, ButtonPosition pPosition)
+	{
+		Color colWhite = new Color(255, 255, 255, 170);
+		
+		MaterialButton but = new MaterialButton();
+		but.setBorder(new EmptyBorder(5, 10, 5, 10));
+        but.setVerticalAlignment(SwingConstants.CENTER);
+        but.setHorizontalAlignment(SwingConstants.CENTER);
+        but.setArc(25);
+        but.setBackgroundPainted(true);
+        but.setBackground(new Color(0, 0, 0, 150));
+        but.setForeground(colWhite);
+		
+		if (pIcon != null)
+		{
+			but.setIcon(IconFontSwing.buildIcon(pIcon, 16f, colWhite));
+		}
+		
+		if (pText != null)
+		{
+			but.setText(pText);
+		}
+		
+		if (pListener != null)
+		{
+			but.addActionListener(pListener);
+		}
+		
+		if (pPosition == ButtonPosition.Left)
+		{
+			panOptionButtons.add(but, flOptionButtons.createConstraint(liLeftButtons.size(), 0));
+			
+			liLeftButtons.add(but);
+		}
+		else
+		{
+			liRightButtons.add(but);
+			
+			panOptionButtons.add(but, flOptionButtons.createConstraint(-liRightButtons.size(), 0));
+		}
+		
+		panOptionButtons.setVisible(!liLeftButtons.isEmpty() || !liRightButtons.isEmpty());
+		
+		return but;
+	}
+	
+	/**
+	 * Removes a specific optional button.
+	 * 
+	 * @param pButton the button
+	 */
+	public void removeButton(MaterialButton pButton)
+	{
+		panOptionButtons.remove(pButton);
+		
+		liLeftButtons.remove(pButton);
+		liRightButtons.remove(pButton);
+		
+		panOptionButtons.setVisible(!liLeftButtons.isEmpty() || !liRightButtons.isEmpty());
+	}
+	
+	/**
+	 * Removes all optional buttons.
+	 */
+	public void removeAllButtons()
+	{
+		panOptionButtons.removeAll();
+		
+		panOptionButtons.setVisible(false);
 	}
 	
 	/**

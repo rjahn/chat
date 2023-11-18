@@ -20,6 +20,7 @@ import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 
 import javax.swing.border.Border;
 
@@ -37,6 +38,9 @@ public class ArcPanel extends BasePanel
 	/** the arc. */
     private int arc;
 
+    /** whether the bottom corners should be without arc. */
+    private boolean bBottomNoArc = false;
+    
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Initialization
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -89,7 +93,20 @@ public class ArcPanel extends BasePanel
 		        	ins = INSETS_0;
 		        }
 		        
+		        Shape shClip = g2.getClip();
+		        
+		        if (bBottomNoArc)
+		        {
+		        	g2.setClip(0, 0, getWidth(), getHeight() - ins.top - ins.bottom - arc + 2);
+		        }
+		        
 	        	g2.fillRoundRect(0 + ins.left, 0 + ins.top, getWidth() - ins.left - ins.right, getHeight() - ins.top - ins.bottom, arc, arc);
+	        	
+	        	if (bBottomNoArc)
+	        	{
+	        		g2.setClip(shClip);
+	        		g2.fillRect(0 + ins.left, getHeight() - ins.top - ins.bottom - arc + 2, getWidth() - ins.left - ins.right, arc + 2);
+	        	}
 	        }
 	        finally
 	        {
@@ -124,6 +141,26 @@ public class ArcPanel extends BasePanel
     public int getArc() 
     {
         return arc;
+    }
+    
+    /**
+     * Sets whether the bottom should be painted without arc.
+     * 
+     * @param pBottomNoArc <code>true</code> to paint bottom without arc
+     */
+    public void setBottomNoArc(boolean pBottomNoArc)
+    {
+    	bBottomNoArc = pBottomNoArc;
+    }
+    
+    /**
+     * Gets whether the bottom will be painted without arc.
+     * 
+     * @return <code>true</code> if bottom will be painted without arc
+     */
+    public boolean isBottomNoArc()
+    {
+    	return bBottomNoArc;
     }
     
 }	// ArcPanel

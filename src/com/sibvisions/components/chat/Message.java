@@ -38,7 +38,7 @@ import com.sibvisions.rad.ui.swing.ext.layout.JVxBorderLayout;
 import com.sibvisions.rad.ui.swing.ext.layout.JVxFormLayout;
 
 /**
- * The <code>Message</code> is a painted message with a bubble around the message.
+ * The <code>Message</code> is a painted text message with a bubble around the text.
  * 
  * @author René Jahn
  */
@@ -94,12 +94,22 @@ public class Message extends BasePanel
 	/**
 	 * Creates a new instance of <code>Message</code>.
 	 * 
-	 * @param pChat the chat
 	 * @param pText the text to show
 	 */
-	public Message(Chat pChat, String pText)
+	public Message(String pText)
 	{
-		this(pChat, pText, Type.Left);
+		this(null, pText, Type.Left);
+	}
+	
+	/**
+	 * Creates a new instance of <code>Message</code>.
+	 * 
+	 * @param pText the text to show
+	 * @param pType the message type
+	 */
+	public Message(String pText, Type pType)
+	{
+		this(null, pText, pType);
 	}
 	
 	/**
@@ -109,9 +119,8 @@ public class Message extends BasePanel
 	 * @param pText the text to show
 	 * @param pType the message type
 	 */
-	public Message(Chat pChat, String pText, Type pType)
+	Message(Chat pChat, String pText, Type pType)
 	{
-		chat = pChat;
 		text = pText;
 		type = pType;
 		
@@ -128,34 +137,14 @@ public class Message extends BasePanel
 		{
 			add(avatar, flThis.createConstraint(0, 0));
 			add(bubble, flThis.createConstraint(1, 0));
-			
-			Image img = chat.getAvatarLeft();
-			
-			if (img != null)
-			{
-				avatar.setImage(img);
-			}
-			else
-			{
-				avatar.setVisible(false);
-			}
 		}
 		else
 		{
 			add(avatar, flThis.createConstraint(-1, 0));
 			add(bubble, flThis.createConstraint(-2, 0));
-			
-			Image img = chat.getAvatarRight();
-			
-			if (img != null)
-			{
-				avatar.setImage(img);
-			}
-			else
-			{
-				avatar.setVisible(false);
-			}
 		}
+		
+		setChat(pChat);
 		
 		listener = new ComponentAdapter() 
 		{
@@ -165,7 +154,7 @@ public class Message extends BasePanel
 				
 				bubble.revalidate();
 			}
-		};
+		};		
 	}
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -234,6 +223,55 @@ public class Message extends BasePanel
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// User-defined methods
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	/**
+	 * Sets the chat to use for displaying the message.
+	 * 
+	 * @param pChat the chat
+	 */
+	void setChat(Chat pChat)
+	{
+		chat = pChat;
+		
+		if (chat != null)
+		{
+			if (type == Type.Left)
+			{
+				Image img = chat.getAvatarLeft();
+				
+				if (img != null)
+				{
+					avatar.setVisible(true);
+					avatar.setImage(img);
+				}
+				else
+				{
+					avatar.setVisible(false);
+				}
+			}
+			else
+			{
+				Image img = chat.getAvatarRight();
+				
+				if (img != null)
+				{
+					avatar.setVisible(true);
+					avatar.setImage(img);
+				}
+				else
+				{
+					avatar.setVisible(false);
+				}
+			}
+		}
+		else
+		{
+			avatar.setImage(null);
+			avatar.setVisible(false);
+		}
+		
+		bubble.update();
+	}
 	
 	/**
 	 * Gets the type.
@@ -441,45 +479,48 @@ public class Message extends BasePanel
 		 */
 		protected void update()
 		{
-			textPane.setText(message.chat.translate(message.text));
-			
-			Color colForeground = message.getForeground();
-			
-			if (message.type == Type.Left)
+			if (message.chat != null)
 			{
-				//left: icon after text
-				if (message.isTyping)
-				{
-					Icon ico = message.chat.getTypingIconLeft();
-					
-					if (ico != null)
-					{
-						textPane.insertIcon(ico);
-					}
-				}
+				textPane.setText(message.chat.translate(message.text));
 				
-				textPane.setForeground(colForeground != null ? colForeground : message.chat.getDefaultMessageForegroundLeft());
-			}
-			else
-			{
-				//right: icon before text
-				if (message.isTyping)
+				Color colForeground = message.getForeground();
+				
+				if (message.type == Type.Left)
 				{
-					Icon ico = message.chat.getTypingIconRight();
-					
-					if (ico != null)
+					//left: icon after text
+					if (message.isTyping)
 					{
-						textPane.setCaretPosition(0);
-						textPane.insertIcon(ico);
+						Icon ico = message.chat.getTypingIconLeft();
+						
+						if (ico != null)
+						{
+							textPane.insertIcon(ico);
+						}
 					}
+					
+					textPane.setForeground(colForeground != null ? colForeground : message.chat.getDefaultMessageForegroundLeft());
 				}
-
-				textPane.setForeground(colForeground != null ? colForeground : message.chat.getDefaultMessageForegroundRight());
-			}
-
-			if (message.isShowing())
-			{
-				repaint();
+				else
+				{
+					//right: icon before text
+					if (message.isTyping)
+					{
+						Icon ico = message.chat.getTypingIconRight();
+						
+						if (ico != null)
+						{
+							textPane.setCaretPosition(0);
+							textPane.insertIcon(ico);
+						}
+					}
+	
+					textPane.setForeground(colForeground != null ? colForeground : message.chat.getDefaultMessageForegroundRight());
+				}
+	
+				if (message.isShowing())
+				{
+					repaint();
+				}
 			}
 		}
 		

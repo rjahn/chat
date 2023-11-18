@@ -21,6 +21,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
+import com.sibvisions.components.chat.Chat.ButtonPosition;
 import com.sibvisions.components.chat.event.ChatEvent;
 import com.sibvisions.components.chat.event.ChatListener;
 import com.sibvisions.components.chat.event.MessageEvent;
@@ -67,7 +68,7 @@ public class TestChat extends JFrame
 	 */
 	public TestChat()
 	{
-		setUndecorated(true);
+//		setUndecorated(true);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		
 		JVxBorderLayout layout = new JVxBorderLayout();
@@ -80,7 +81,12 @@ public class TestChat extends JFrame
 		chat.setCloseVisible(true);
 		chat.addChatListener(this);
 		
-		Message msg = new Message(chat, "Hello and welcome!", Message.Type.Right);
+		chat.addButton(GoogleMaterialDesignIcons.CHECK, "Create", null, ButtonPosition.Right);
+		chat.addButton(GoogleMaterialDesignIcons.HOURGLASS_FULL, "OK", null, ButtonPosition.Right);
+		
+		chat.addButton(GoogleMaterialDesignIcons.SPEAKER, null, null, ButtonPosition.Left);
+		
+		Message msg = new Message("Hello and welcome!", Message.Type.Right);
 		
 		chat.addMessage(msg);
 		
@@ -105,8 +111,7 @@ public class TestChat extends JFrame
 				dispose();
 				break;
 			case ChatEvent.EVENT_MESSAGE:
-				pEvent.getChat().addMessage(new Message(pEvent.getChat(), 
-						                                ((MessageEvent)pEvent).getMessage().trim(), pEvent.getChat().getMessages().length %2 == 1 ? Message.Type.Left : Message.Type.Right));
+				pEvent.getChat().addMessage(new Message(((MessageEvent)pEvent).getMessage().trim(), pEvent.getChat().getMessages().length %2 == 1 ? Message.Type.Left : Message.Type.Right));
 				break;
 			default:
 				//ignore
