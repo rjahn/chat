@@ -30,6 +30,7 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.List;
 
 import javax.rad.model.ui.ITranslatable;
 import javax.rad.util.ITranslator;
@@ -1103,6 +1104,24 @@ public class Chat extends BasePanel
 		panOptionButtons.removeAll();
 		
 		panOptionButtons.setVisible(false);
+	}
+	
+	/**
+	 * Gets all optional buttons for the given position.
+	 * 
+	 * @param pPosition the position
+	 * @return all available buttons
+	 */
+	public List<MaterialButton> getButtons(ButtonPosition pPosition)
+	{
+		if (pPosition == ButtonPosition.Left)
+		{
+			return liLeftButtons.clone();
+		}
+		else
+		{
+			return liRightButtons.clone();
+		}
 	}
 	
 	/**
