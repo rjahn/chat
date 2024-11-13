@@ -32,9 +32,9 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
 
-import javax.rad.model.ui.ITranslatable;
-import javax.rad.util.ITranslator;
-import javax.rad.util.TranslationMap;
+import jvx.rad.model.ui.ITranslatable;
+import jvx.rad.util.ITranslator;
+import jvx.rad.util.TranslationMap;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
