@@ -291,7 +291,7 @@ public class TextPane extends JTextPane
      * 
      * @author René Jahn
      */
-    private static class WrapStyledEditorKit extends StyledEditorKit
+    private static final class WrapStyledEditorKit extends StyledEditorKit
     {
 	    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	    // Overwritten methods
@@ -310,7 +310,7 @@ public class TextPane extends JTextPane
      * 
      * @author René Jahn
      */
-    private static class WrapViewFactory implements ViewFactory 
+    private static final class WrapViewFactory implements ViewFactory 
     {
 	    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	    // Overwritten methods
